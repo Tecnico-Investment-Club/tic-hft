@@ -1,0 +1,14 @@
+# Setup Inicial
+
+mkdir build
+cd build
+cmake ..
+make
+
+# Após criação de novos ficheiros .cpp, adicioná-los ao ficheiro CMakeList.txt
+
+# Para compilar o código correr
+
+cd build 
+make
+./hft_etl

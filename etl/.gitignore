@@ -1,0 +1,13 @@
+# Ignorar a pasta de compilação
+build/
+cmake-build-debug/
+bin/
+
+# Ignorar ficheiros de sistema ou IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Ignorar ficheiros de configuração com passwords 
+config/secrets.json
+.env

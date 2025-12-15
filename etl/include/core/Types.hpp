@@ -1,0 +1,1 @@
+// Definição da struct Kline e todas as "globais"
