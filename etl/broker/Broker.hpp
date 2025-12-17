@@ -1,0 +1,1 @@
+// Classe abstrata que define o que cada broker deve ter como base

@@ -1,0 +1,1 @@
+// Fila segura para threads que acumula os JSONs vindos da broker antes de serem processados
