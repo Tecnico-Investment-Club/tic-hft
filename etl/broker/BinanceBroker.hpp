@@ -1,1 +1,0 @@
-// Herança de Broker, que implementa a comunicação com a broker Binance via WebSocket

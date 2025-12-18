@@ -5,8 +5,12 @@
 // 4) Lançar as threads e conexão com a broker
 
 #include <iostream>
+#include "../include/broker/BinanceBroker.hpp" 
 
 int main() {
-    std::cout << "SETUP INICIAL HTF ETL!" << std::endl;
+    std::cout << "SETUP INICIAL HFT ETL!" << std::endl;
+
+    hft::BinanceBroker broker;
+
     return 0;
 }

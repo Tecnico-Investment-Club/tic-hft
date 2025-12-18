@@ -25,5 +25,6 @@ add_executable(hft_etl
     src/main.cpp
     src/network/WebSocketClient.cpp
     src/transform/MarketDataParser.cpp
+    src/broker/BinanceBroker.cpp
 )
 target_link_libraries(hft_etl PRIVATE simdjson ixwebsocket::ixwebsocket)
