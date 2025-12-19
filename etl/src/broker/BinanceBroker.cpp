@@ -15,6 +15,7 @@ namespace hft {
 
         std::cout << "[BinanceBroker] A tentar conectar a " << websocket_url_ << "..." << std::endl;
 
+        webSocketClient_.connect(websocket_url_);
     }
 
     // Função que disconecta do WebSocket da Binance

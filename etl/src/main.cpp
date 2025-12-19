@@ -12,5 +12,11 @@ int main() {
 
     hft::BinanceBroker broker;
 
+    broker.connect();
+
+    // FIXME apenas para teste para manter a thread ativa
+    std::cout << "Pressione ENTER para sair..." << std::endl;
+    std::cin.get();
+
     return 0;
 }

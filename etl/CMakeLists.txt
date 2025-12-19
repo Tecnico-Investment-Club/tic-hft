@@ -20,6 +20,10 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(ixwebsocket)
 
+set(USE_TLS 1 CACHE BOOL "Force TLS" FORCE)
+
+find_package(OpenSSL REQUIRED)
+
 # ... resto da tua configuração ...
 add_executable(hft_etl 
     src/main.cpp
@@ -27,4 +31,9 @@ add_executable(hft_etl
     src/transform/MarketDataParser.cpp
     src/broker/BinanceBroker.cpp
 )
-target_link_libraries(hft_etl PRIVATE simdjson ixwebsocket::ixwebsocket)
+target_link_libraries(hft_etl PRIVATE 
+    simdjson 
+    ixwebsocket::ixwebsocket
+    OpenSSL::SSL 
+    OpenSSL::Crypto
+)

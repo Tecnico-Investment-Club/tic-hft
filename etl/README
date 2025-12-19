@@ -1,4 +1,5 @@
 # Setup Inicial
+sudo apt-get update && sudo apt-get install libssl-dev
 
 mkdir build
 cd build

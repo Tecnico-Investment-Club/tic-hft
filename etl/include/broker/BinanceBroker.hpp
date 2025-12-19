@@ -4,6 +4,7 @@
 
 #include "Broker.hpp"
 #include "../../common/Constants.hpp" 
+#include "../network/WebSocketClient.hpp"
 #include <string>
 
 namespace hft {
@@ -25,6 +26,8 @@ namespace hft {
         // Como estamos dentro do namespace 'hft', não precisamos de prefixo se o Constants também estiver lá.
         std::string websocket_url_ = BINANCE_TESTNET_URL;
         
-        bool connected_ = false; 
+        bool connected_ = false;
+
+        WebSocketClient webSocketClient_; 
     };
 }
