@@ -32,7 +32,5 @@ namespace hft { // Usado para evitar conflitos de nomes
         // Garante alinhamento perfeito na memória (múltiplo de 8)
         char symbol[16] = {0};
 
-        // Útil para o parser saber se deve ignorar a vela ou não.
-        bool is_closed = false;
     };
 }

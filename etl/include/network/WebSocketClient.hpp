@@ -15,19 +15,29 @@ namespace hft {
         WebSocketClient();
         ~WebSocketClient();
 
-        // Configura e inicia a conexão
         void connect(const std::string& url);
-
-        // Fecha a conexão
         void disconnect();
-
-        // Verifica se o handshake foi bem sucedido
         bool isConnected() const;
+        void send(const std::string& message);
+
+        // Callbacks para conexão
+        using ConnectCallback = std::function<void()>;
+
+        // Callback para mensagens 
+        using MessageCallback = std::function<void(const std::string&)>;
+
+        // Funções para a Broker configurar os callbacks
+        void setOnConnect(ConnectCallback callback);
+        void setOnMessage(MessageCallback callback);
 
     private:
         ix::WebSocket webSocket_;
         
         // Variável atómica para evitar conflitos de leitura/escrita entre threads
         std::atomic<bool> connected_{false};
+
+        // Onde são guardadas as funções que a Broker define
+        ConnectCallback onConnect_;
+        MessageCallback onMessage_;
     };
 }

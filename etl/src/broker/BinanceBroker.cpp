@@ -13,7 +13,30 @@ namespace hft {
     void BinanceBroker::connect() {
         if (this->is_connected()) return; // Se já estiver ligado, não faz nada
 
-        std::cout << "[BinanceBroker] A tentar conectar a " << websocket_url_ << "..." << std::endl;
+        // Função que define o que acontece quando é feita a conexão à Broker
+        webSocketClient_.setOnConnect([this]() {
+            std::cout << "[BinanceBroker] Conectado! A enviar subscrição..." << std::endl;
+            
+            // Usamos R"(...)" para criar uma string JSON limpa sem ter de escapar aspas
+            std::string json_pedido = R"(
+            {
+                "method": "SUBSCRIBE",
+                "params": [
+                    "btcusdt@kline_1m"
+                ],
+                "id": 1
+            }
+            )";
+            
+            // Enviamos o pedido usando o nosso estafeta
+            webSocketClient_.send(json_pedido);
+
+        });
+
+        webSocketClient_.setOnMessage([this](const std::string& msg) {
+            parser_.processMessage(msg);
+        });
+        
 
         webSocketClient_.connect(websocket_url_);
     }

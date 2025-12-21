@@ -8,8 +8,6 @@
 #include "../include/broker/BinanceBroker.hpp" 
 
 int main() {
-    std::cout << "SETUP INICIAL HFT ETL!" << std::endl;
-
     hft::BinanceBroker broker;
 
     broker.connect();

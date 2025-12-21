@@ -5,6 +5,7 @@
 #include "Broker.hpp"
 #include "../../common/Constants.hpp" 
 #include "../network/WebSocketClient.hpp"
+#include "../transform/MarketDataParser.hpp"
 #include <string>
 
 namespace hft {
@@ -16,7 +17,6 @@ namespace hft {
 
         ~BinanceBroker() override = default;
 
-        // --- Implementação do Contrato (Interface) ---
         void connect() override;
         void disconnect() override;
         bool is_connected() const override;
@@ -29,5 +29,7 @@ namespace hft {
         bool connected_ = false;
 
         WebSocketClient webSocketClient_; 
+
+        MarketDataParser parser_;
     };
 }
