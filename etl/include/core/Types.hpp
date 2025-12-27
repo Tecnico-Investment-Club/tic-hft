@@ -20,9 +20,9 @@ namespace hft { // Usado para evitar conflitos de nomes
 
         // Variáveis financeiras
         double open_price = 0.0;
+        double close_price = 0.0;
         double high_price = 0.0;
         double low_price = 0.0;
-        double close_price = 0.0;
         double volume = 0.0;
         double quote_volume = 0.0;
         double taker_buy_volume = 0.0;

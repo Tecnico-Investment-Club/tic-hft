@@ -26,11 +26,18 @@ namespace hft {
                 
                 // Simbolo (s): É uma string, precisamos copiar para o char[]
                 std::string_view symbol_sv;
-                if (doc["s"].get(symbol_sv) == simdjson::SUCCESS) {
-                    // Copia com segurança para evitar buffer overflow
-                    std::strncpy(kline.symbol, symbol_sv.data(), sizeof(kline.symbol) - 1);
+                if (k_obj["s"].get(symbol_sv) == simdjson::SUCCESS) {
+                    size_t len = symbol_sv.length();
+                    if (len >= sizeof(kline.symbol)) {
+                        len = sizeof(kline.symbol) - 1; // Deixa espaço para o \0
+                    }
+                    std::memcpy(kline.symbol, symbol_sv.data(), len);
+
+                    kline.symbol[len] = '\0';
                 }
                 
+                // FIXME perceber o que fazer quanto ao ID
+
                 int64_t val_int;
                 if (k_obj["t"].get(val_int) == simdjson::SUCCESS) kline.open_time = val_int;
                 if (k_obj["T"].get(val_int) == simdjson::SUCCESS) kline.close_time = val_int;
@@ -43,16 +50,35 @@ namespace hft {
                 if (k_obj["h"].get(val_str) == simdjson::SUCCESS) kline.high_price = std::stod(std::string(val_str));
                 if (k_obj["l"].get(val_str) == simdjson::SUCCESS) kline.low_price = std::stod(std::string(val_str));
                 if (k_obj["v"].get(val_str) == simdjson::SUCCESS) kline.volume = std::stod(std::string(val_str));
+                if (k_obj["q"].get(val_str) == simdjson::SUCCESS) kline.quote_volume = std::stod(std::string(val_str));
+                if (k_obj["V"].get(val_str) == simdjson::SUCCESS) kline.taker_buy_volume = std::stod(std::string(val_str));
+                if (k_obj["Q"].get(val_str) == simdjson::SUCCESS) kline.taker_buy_quote_volume = std::stod(std::string(val_str));
                 
-                // FIXME ADICIONAR O RESTO DOS PARÃMETROS DA KLINE
 
-                // FIXEME DAR JÁ ESTAMOS APENAS A DAR PRINT
-                std::cout << "=== KLINE FECHADA ===" << std::endl;
-                std::cout << "Par: " << kline.symbol << std::endl;
-                std::cout << "Close: " << kline.close_price << std::endl;
-                std::cout << "Volume: " << kline.volume << std::endl;
-                std::cout << "Trades: " << kline.trades << std::endl;
-                std::cout << "---------------------" << std::endl;
+                // Prints de debug
+                std::cout << "\n========================================" << std::endl;
+                std::cout << "✅ KLINE FINALIZADA PROCESSADA COM SUCESSO" << std::endl;
+                std::cout << "========================================" << std::endl;
+                std::cout << "🔹 Identificação:" << std::endl;
+                std::cout << "   Symbol: " << kline.symbol << std::endl;
+                std::cout << "   ID:     " << kline.id << std::endl;
+                std::cout << "🔹 Tempos:" << std::endl;
+                std::cout << "   Open Time:  " << kline.open_time << std::endl;
+                std::cout << "   Close Time: " << kline.close_time << std::endl;
+                std::cout << "🔹 Preços:" << std::endl;
+                std::cout << "   Open:  " << kline.open_price << std::endl;
+                std::cout << "   High:  " << kline.high_price << std::endl;
+                std::cout << "   Low:   " << kline.low_price << std::endl;
+                std::cout << "   Close: " << kline.close_price << std::endl;
+                std::cout << "🔹 Volumes & Atividade:" << std::endl;
+                std::cout << "   Volume (Base):  " << kline.volume << std::endl;
+                std::cout << "   Volume (Quote): " << kline.quote_volume << std::endl;
+                std::cout << "   Taker Buy Vol:  " << kline.taker_buy_volume << std::endl;
+                std::cout << "   Taker Buy Quote Vol: " << kline.taker_buy_quote_volume << std::endl;
+                std::cout << "   Num Trades:     " << kline.trades << std::endl;
+                std::cout << "========================================\n" << std::endl;
+
+                //FIXME enviar a kline para o RingBuffer
             }
 
         } catch (const std::exception& e) {
