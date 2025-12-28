@@ -5,7 +5,8 @@ namespace hft {
 
     // Exibir apenas um log enquanto não existem argumentos
     // No futuro, podemos pôr o BINANCE_TESTNET_URL como argumento do construtor
-    BinanceBroker::BinanceBroker() {
+    BinanceBroker::BinanceBroker(KlineRingBuffer& buffer) 
+        : parser_(buffer) {
         std::cout << "[BinanceBroker] Objeto criado. URL base: " << websocket_url_ << std::endl;
     }
 
@@ -17,7 +18,7 @@ namespace hft {
         webSocketClient_.setOnConnect([this]() {
             std::cout << "[BinanceBroker] Conectado! A enviar subscrição..." << std::endl;
             
-            // Usamos R"(...)" para criar uma string JSON limpa sem ter de escapar aspas
+            // FIXME corrgir para que não esteja hardcoded o par e o timeframe
             std::string json_pedido = R"(
             {
                 "method": "SUBSCRIBE",
@@ -36,7 +37,6 @@ namespace hft {
         webSocketClient_.setOnMessage([this](const std::string& msg) {
             parser_.processMessage(msg);
         });
-        
 
         webSocketClient_.connect(websocket_url_);
     }

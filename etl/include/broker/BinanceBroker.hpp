@@ -13,7 +13,7 @@ namespace hft {
     class BinanceBroker : public Broker {
     public:
         // O Construtor agora é vazio de argumentos, pois o URL já é conhecido internamente
-        BinanceBroker();
+        BinanceBroker(KlineRingBuffer& buffer);
 
         ~BinanceBroker() override = default;
 
