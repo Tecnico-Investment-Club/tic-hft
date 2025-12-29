@@ -1,6 +1,7 @@
 # Ignorar a pasta de compilação
 build/
 cmake-build-debug/
+.CMakeLists.txt.swp
 bin/
 
 # Ignorar ficheiros de sistema ou IDE
