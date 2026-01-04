@@ -23,7 +23,7 @@ namespace hft {
             {
                 "method": "SUBSCRIBE",
                 "params": [
-                    "btcusdt@kline_1m"
+                    "btcusdt@kline_1s"
                 ],
                 "id": 1
             }

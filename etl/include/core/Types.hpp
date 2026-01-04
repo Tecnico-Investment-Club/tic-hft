@@ -31,6 +31,5 @@ namespace hft { // Usado para evitar conflitos de nomes
         // 16 bytes cobre desde "BTCUSDT" (7 bytes), até "1000SHIBUSDT" (12 bytes) com segurança
         // Garante alinhamento perfeito na memória (múltiplo de 8)
         char symbol[16] = {0};
-
     };
 }
