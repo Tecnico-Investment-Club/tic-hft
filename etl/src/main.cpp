@@ -31,9 +31,6 @@ int main() {
             std::cout << "Close Price: " << kline.close_price << std::endl;
             std::cout << "--------------------------------" << std::endl;
         }
-
-        // FIXME Dorme durante 5 segundos 
-        std::this_thread::sleep_for(std::chrono::seconds(5));
     }
 
     return 0;

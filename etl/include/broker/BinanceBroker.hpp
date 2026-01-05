@@ -30,6 +30,6 @@ namespace hft {
 
         WebSocketClient webSocketClient_; 
 
-        MarketDataParser parser_;
+        MarketDataParser<BinanceTag> parser_;
     };
 }

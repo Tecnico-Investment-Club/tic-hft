@@ -5,13 +5,14 @@
 
 namespace hft {
 
-    MarketDataParser::MarketDataParser(KlineRingBuffer& buffer) 
-    : ringBuffer_(buffer) {}
+    template <typename BrokerTag>
+    MarketDataParser<BrokerTag>::MarketDataParser(KlineRingBuffer& buffer) 
+        : ringBuffer_(buffer) {}
 
-    // FIXME não deixar hardcoded para a Binance
-    // possivelmente criar um parser genérico e especializações para cada broker
-    // usando o "using BrokerParser = MarketDataParser<BinanceBroker>;" por exemplo
-    void MarketDataParser::processMessage(std::string_view json_message) {
+
+    // Especialização do método processMessage para BinanceTag (Broker Binance)
+    template <>
+    void MarketDataParser<BinanceTag>::processMessage(std::string_view json_message) {
         simdjson::padded_string json(json_message);
         simdjson::ondemand::document doc;
 
@@ -69,4 +70,7 @@ namespace hft {
             std::cerr << "Erro no parser: " << e.what() << std::endl;
         }
     }
+
+    // Instanciação explícita para BinanceTag para o compilador gerar o código necessário
+    template class MarketDataParser<BinanceTag>;
 }
