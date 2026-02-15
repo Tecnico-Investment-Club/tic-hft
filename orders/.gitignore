@@ -1,0 +1,11 @@
+build/
+*.o
+*.so
+*.a
+*.exe
+.vscode/
+.idea/
+CMakeUserPresets.json
+orders.json
+logs/
+*.json
