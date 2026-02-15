@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  hft-orders:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tic-hft-orders:latest
+    container_name: tic-hft-orders
+    environment:
+      - LOG_LEVEL=INFO
+      - DRY_RUN=false
+      - MIN_SLEEP=1
+      - MAX_SLEEP=5
+      - BINANCE_API_KEY=${BINANCE_API_KEY}
+      - BINANCE_API_SECRET=${BINANCE_API_SECRET}
+      - DATABASE_URL=postgresql://tic_strat_app:imaginemterumadb123@host.docker.internal:5432/tic
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:9001:9001"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      - hft-etl
+    networks:
+      - tic-network
+    healthcheck:
+      test: ["CMD", "ps", "aux"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  hft-etl:
+    image: tic-hft-etl:latest
+    container_name: tic-hft-etl
+    environment:
+      - BINANCE_KEY=${BINANCE_API_KEY}
+    networks:
+      - tic-network
+    restart: unless-stopped
+
+networks:
+  tic-network:
+    driver: bridge
