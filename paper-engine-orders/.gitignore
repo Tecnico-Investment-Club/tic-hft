@@ -1,0 +1,93 @@
+# Environment variables (NUNCA commitar!)
+.env
+.env.local
+.env.*.local
+.env.production.local
+
+# Build artifacts
+build/
+cmake_build/
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+
+# Executables
+paper-engine-orders
+*.out
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Compiler outputs
+*.d
+*.su
+
+# Dependencies (optional - descomenta se usares)
+# external/
+# vendor/
+
+# Logs
+*.log
+logs/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Runtime files
+*.pid
+*.lock
+
+# OS specific
+Thumbs.db
+.DS_Store
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Core dumps
+core
+core.*
+vgcore.*
+
+# Test artifacts
+test_results/
+coverage/
+*.gcov
+*.gcda
+*.gcno
+
+# Docker volumes (se aplicável)
+postgres_data/
+mongodb_data/
+
+# Python cache (se houver scripts Python)
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Node artifacts (se aplicável)
+node_modules/
+package-lock.json
+yarn.lock

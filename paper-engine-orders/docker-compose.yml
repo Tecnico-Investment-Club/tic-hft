@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: hft_postgres
+    environment:
+      POSTGRES_USER: hft_user
+      POSTGRES_PASSWORD: hft_password
+      POSTGRES_DB: hft_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - hft_network
+
+  paper-engine-orders:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: paper_engine_orders
+    depends_on:
+      - postgres
+    environment:
+      DB_SOURCE_CONNECTION: "postgresql://hft_user:hft_password@postgres:5432/hft_db"
+      DB_TARGET_CONNECTION: "postgresql://hft_user:hft_password@postgres:5432/hft_db"
+      ALPACA_API_KEY: ${ALPACA_API_KEY}
+      ALPACA_BASE_URL: "https://paper-api.alpaca.markets"
+      PORTFOLIO_ID: 1
+      STRATEGY_ID: 1
+      CASH_ALLOCATION: 1000.0
+      DRY_RUN: "true"
+    networks:
+      - hft_network
+    command: paper-engine-orders --dry-run
+
+volumes:
+  postgres_data:
+
+networks:
+  hft_network:
+    driver: bridge
