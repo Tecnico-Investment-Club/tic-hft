@@ -3,9 +3,43 @@
 #include <thread>
 #include <iomanip>
 #include <atomic>
+#include <fstream>
+#include <string>
 #include "../include/execution/AlpacaOrderExecutor.hpp"
 
 using namespace hft::orders::execution;
+
+// Helper: read from .env file
+static std::string read_env(const std::string& key) {
+    std::ifstream file(".env");
+    if (!file.is_open()) {
+        std::cerr << "Warning: .env file not found\n";
+        return "";
+    }
+    
+    std::string line;
+    while (std::getline(file, line)) {
+        if (line.empty() || line[0] == '#') continue;
+        
+        size_t pos = line.find(key + "=");
+        if (pos == 0) {
+            std::string value = line.substr(key.length() + 1);
+            
+            // Remove trailing whitespace, \r, \n
+            while (!value.empty() && (value.back() == ' ' || value.back() == '\t' 
+                                      || value.back() == '\r' || value.back() == '\n')) {
+                value.pop_back();
+            }
+            
+            // Remove quotes if present
+            if (!value.empty() && value.front() == '"') value.erase(0, 1);
+            if (!value.empty() && value.back() == '"') value.pop_back();
+            
+            return value;
+        }
+    }
+    return "";
+}
 
 /**
  * Simple Order Executor with Capital Tracking
@@ -102,11 +136,19 @@ int main() {
     std::cout << "=== HFT Orders System - Fire-and-Forget Example ===\n";
     std::cout << "Simple order execution with capital tracking\n\n";
 
+    // Read API credentials from .env
+    std::string api_key = read_env("ALPACA_API_KEY");
+    std::string base_url = read_env("ALPACA_BASE_URL");
+    
+    if (base_url.empty()) {
+        base_url = "https://paper-api.alpaca.markets";
+    }
+    
+    std::cout << "API Key loaded: " << (api_key.empty() ? "❌ NOT FOUND" : "✓ OK") << "\n";
+    std::cout << "Base URL: " << base_url << "\n\n";
+
     // Create manager with API credentials
-    SimpleOrderManager manager(
-        std::getenv("ALPACA_API_KEY") ? std::getenv("ALPACA_API_KEY") : "demo-key",
-        "https://paper-api.alpaca.markets"
-    );
+    SimpleOrderManager manager(api_key, base_url);
 
     manager.initialize();
 

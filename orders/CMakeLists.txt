@@ -4,12 +4,16 @@ project(tic-hft-orders)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Find required packages
+find_package(CURL REQUIRED)
+
 # Main library - only execution component
 add_library(hft-orders STATIC
     src/execution/AlpacaOrderExecutor.cpp
 )
 
 target_include_directories(hft-orders PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(hft-orders PUBLIC CURL::libcurl)
 
 # Example executable
 add_executable(example_fire_and_forget examples/example_fire_and_forget.cpp)
