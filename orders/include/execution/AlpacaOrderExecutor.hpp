@@ -23,6 +23,7 @@ class AlpacaOrderExecutor : public IExecution {
 public:
     AlpacaOrderExecutor(
         const std::string& api_key,
+        const std::string& secret_key,
         const std::string& base_url = "https://paper-api.alpaca.markets",
         int max_batch_size = 10
     );
@@ -38,6 +39,7 @@ public:
 
 private:
     std::string api_key_;
+    std::string secret_key_;
     std::string base_url_;
     int max_batch_size_;
     
@@ -57,6 +59,8 @@ private:
     void executor_loop();
     void process_batch();
     bool submit_to_alpaca(const Order& order);
+    bool alpaca_get_account(std::string& response);
+    bool alpaca_submit_order(const Order& order, std::string& response);
 };
 
 } // namespace hft::orders::execution

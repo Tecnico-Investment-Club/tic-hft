@@ -3,62 +3,10 @@
 #include <chrono>
 #include <thread>
 #include <curl/curl.h>
-#include <sstream>
-#include <iomanip>
-#include <fstream>
-#include <cstring>
+#include <cstdlib>
+#include <algorithm>
 
 namespace hft::orders::execution {
-
-// Helper: remove quotes from environment variable values
-static std::string strip_quotes(const std::string& str) {
-    std::string result = str;
-    // Remove leading/trailing quotes
-    if (!result.empty() && result.front() == '"') {
-        result.erase(0, 1);
-    }
-    if (!result.empty() && result.back() == '"') {
-        result.pop_back();
-    }
-    // Remove leading/trailing whitespace
-    while (!result.empty() && (result.front() == ' ' || result.front() == '\t')) {
-        result.erase(0, 1);
-    }
-    while (!result.empty() && (result.back() == ' ' || result.back() == '\t')) {
-        result.pop_back();
-    }
-    return result;
-}
-
-// Helper: read environment variable or .env file
-static std::string get_env_or_file(const std::string& var_name, const std::string& default_value = "") {
-    // First try to get from environment
-    const char* env_val = std::getenv(var_name.c_str());
-    if (env_val && std::strlen(env_val) > 0) {
-        return strip_quotes(std::string(env_val));
-    }
-    
-    // Try to read from .env file
-    std::ifstream env_file(".env");
-    if (env_file.is_open()) {
-        std::string line;
-        std::string search_prefix = var_name + "=";
-        while (std::getline(env_file, line)) {
-            // Skip comments and empty lines
-            if (line.empty() || line[0] == '#') continue;
-            
-            // Find the variable
-            if (line.find(search_prefix) == 0) {
-                std::string value = line.substr(search_prefix.length());
-                env_file.close();
-                return strip_quotes(value);
-            }
-        }
-        env_file.close();
-    }
-    
-    return default_value;
-}
 
 // Callback for curl to write response
 static size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* userp) {
@@ -68,12 +16,11 @@ static size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::stri
 
 AlpacaOrderExecutor::AlpacaOrderExecutor(
     const std::string& api_key,
+    const std::string& secret_key,
     const std::string& base_url,
     int max_batch_size
 )
-    : api_key_(api_key)
-    , base_url_(base_url)
-    , max_batch_size_(max_batch_size)
+    : api_key_(api_key), secret_key_(secret_key), base_url_(base_url), max_batch_size_(max_batch_size)
 {
     std::cout << "[AlpacaOrderExecutor] Initialized with base_url: " << base_url_ << "\n";
 }
@@ -96,6 +43,13 @@ void AlpacaOrderExecutor::initialize() {
     } else {
         std::cout << "[AlpacaOrderExecutor] API Key: " << api_key_.substr(0, 4) << "****" 
                   << api_key_.substr(api_key_.length() - 4) << " (length: " << api_key_.length() << ")\n";
+    }
+
+    if (secret_key_.empty()) {
+        std::cout << "[AlpacaOrderExecutor] ⚠️  No Secret key configured (ALPACA_SECRET_KEY env var)\n";
+    } else {
+        std::cout << "[AlpacaOrderExecutor] Secret Key: " << secret_key_.substr(0, 4) << "****"
+                  << secret_key_.substr(secret_key_.length() - 4) << " (length: " << secret_key_.length() << ")\n";
     }
     
     executor_thread_ = std::thread(&AlpacaOrderExecutor::executor_loop, this);
@@ -211,71 +165,92 @@ bool AlpacaOrderExecutor::submit_to_alpaca(const Order& order) {
         std::cout << "[AlpacaOrderExecutor] ERROR: ALPACA_API_KEY not set!\n";
         return false;
     }
-    
-    try {
-        // Initialize CURL
-        CURL* curl = curl_easy_init();
-        if (!curl) {
-            std::cout << "[AlpacaOrderExecutor] ERROR: Failed to init CURL\n";
-            return false;
-        }
-        
-        // Build URL
-        std::string url = base_url_ + "/v2/orders";
-        
-        // Build JSON payload
-        std::ostringstream json;
-        json << "{"
-             << "\"symbol\":\"" << order.asset_id << "\""
-             << ",\"qty\":" << static_cast<int>(order.quantity)
-             << ",\"side\":\"" << order.side << "\""
-             << ",\"type\":\"limit\""
-             << ",\"time_in_force\":\"day\""
-             << ",\"limit_price\":" << std::fixed << std::setprecision(2) << order.price
-             << "}";
-        
-        std::string json_str = json.str();
-        std::string response;
-        
-        // Set up headers
-        struct curl_slist* headers = nullptr;
-        headers = curl_slist_append(headers, "Content-Type: application/json");
-        std::string auth_header = "Authorization: Bearer " + api_key_;
-        headers = curl_slist_append(headers, auth_header.c_str());
-        
-        // Set CURL options
-        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json_str.c_str());
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
-        
-        // Perform request
-        CURLcode res = curl_easy_perform(curl);
-        
-        // Cleanup
-        curl_slist_free_all(headers);
-        curl_easy_cleanup(curl);
-        
-        if (res != CURLE_OK) {
-            std::cout << "[AlpacaOrderExecutor] CURL Error: " << curl_easy_strerror(res) << "\n";
-            return false;
-        }
-        
-        // Check response
-        if (response.find("\"id\"") != std::string::npos) {
-            std::cout << "[AlpacaOrderExecutor] Order accepted: " << order.asset_id << "\n";
-            return true;
-        } else {
-            std::cout << "[AlpacaOrderExecutor] Alpaca rejected: " << response << "\n";
-            return false;
-        }
-        
-    } catch (const std::exception& e) {
-        std::cout << "[AlpacaOrderExecutor] Exception: " << e.what() << "\n";
+    if (secret_key_.empty()) {
+        std::cout << "[AlpacaOrderExecutor] ERROR: ALPACA_SECRET_KEY not set!\n";
         return false;
     }
+    
+    const std::string api_key_header = "APCA-API-KEY-ID: " + api_key_;
+    const std::string secret_key_header = "APCA-API-SECRET-KEY: " + secret_key_;
+
+    // 1) Simple account check (GET /v2/account)
+    CURL* account_curl = curl_easy_init();
+    if (!account_curl) {
+        std::cout << "[AlpacaOrderExecutor] ERROR: Failed to init CURL (account check)\n";
+        return false;
+    }
+
+    std::string account_response;
+    struct curl_slist* account_headers = nullptr;
+    account_headers = curl_slist_append(account_headers, "accept: application/json");
+    account_headers = curl_slist_append(account_headers, api_key_header.c_str());
+    account_headers = curl_slist_append(account_headers, secret_key_header.c_str());
+
+    std::string account_url = base_url_ + "/v2/account";
+    curl_easy_setopt(account_curl, CURLOPT_CUSTOMREQUEST, "GET");
+    curl_easy_setopt(account_curl, CURLOPT_URL, account_url.c_str());
+    curl_easy_setopt(account_curl, CURLOPT_HTTPHEADER, account_headers);
+    curl_easy_setopt(account_curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+    curl_easy_setopt(account_curl, CURLOPT_WRITEDATA, &account_response);
+    curl_easy_setopt(account_curl, CURLOPT_TIMEOUT, 10L);
+
+    CURLcode account_res = curl_easy_perform(account_curl);
+    curl_slist_free_all(account_headers);
+    curl_easy_cleanup(account_curl);
+
+    if (account_res != CURLE_OK) {
+        std::cout << "[AlpacaOrderExecutor] Account check failed: " << curl_easy_strerror(account_res) << "\n";
+        return false;
+    }
+
+    // 2) Submit order (POST /v2/orders)
+    CURL* order_curl = curl_easy_init();
+    if (!order_curl) {
+        std::cout << "[AlpacaOrderExecutor] ERROR: Failed to init CURL (order submit)\n";
+        return false;
+    }
+
+    std::string order_response;
+    struct curl_slist* order_headers = nullptr;
+    order_headers = curl_slist_append(order_headers, "accept: application/json");
+    order_headers = curl_slist_append(order_headers, "content-type: application/json");
+    order_headers = curl_slist_append(order_headers, api_key_header.c_str());
+    order_headers = curl_slist_append(order_headers, secret_key_header.c_str());
+
+    const std::string order_url = base_url_ + "/v2/orders";
+    std::string normalized_side = order.side;
+    std::transform(normalized_side.begin(), normalized_side.end(), normalized_side.begin(),
+        [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    const std::string order_payload =
+        "{\"symbol\":\"" + order.asset_id +
+        "\",\"qty\":" + std::to_string(static_cast<int>(order.quantity)) +
+        ",\"side\":\"" + normalized_side +
+        "\",\"type\":\"market\",\"time_in_force\":\"day\"}";
+
+    curl_easy_setopt(order_curl, CURLOPT_CUSTOMREQUEST, "POST");
+    curl_easy_setopt(order_curl, CURLOPT_URL, order_url.c_str());
+    curl_easy_setopt(order_curl, CURLOPT_HTTPHEADER, order_headers);
+    curl_easy_setopt(order_curl, CURLOPT_POSTFIELDS, order_payload.c_str());
+    curl_easy_setopt(order_curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+    curl_easy_setopt(order_curl, CURLOPT_WRITEDATA, &order_response);
+    curl_easy_setopt(order_curl, CURLOPT_TIMEOUT, 10L);
+
+    CURLcode order_res = curl_easy_perform(order_curl);
+    curl_slist_free_all(order_headers);
+    curl_easy_cleanup(order_curl);
+
+    if (order_res != CURLE_OK) {
+        std::cout << "[AlpacaOrderExecutor] Order submit failed: " << curl_easy_strerror(order_res) << "\n";
+        return false;
+    }
+
+    if (order_response.find("\"id\"") != std::string::npos) {
+        std::cout << "[AlpacaOrderExecutor] Order accepted: " << order.asset_id << "\n";
+        return true;
+    }
+
+    std::cout << "[AlpacaOrderExecutor] Alpaca rejected: " << order_response << "\n";
+    return false;
 }
 
 } // namespace hft::orders::execution

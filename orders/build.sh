@@ -8,7 +8,9 @@ echo "=== Building HFT Orders System ==="
 # Load environment variables
 if [ -f ".env" ]; then
     echo "Loading environment variables from .env"
-    export $(cat .env | grep -v '^#' | xargs)
+    set -a
+    source <(sed 's/\r$//' .env | grep -v '^\s*#' | grep -v '^\s*$')
+    set +a
 else
     echo "⚠️  No .env file found. Copy .env.example to .env"
     echo "   cp .env.example .env"

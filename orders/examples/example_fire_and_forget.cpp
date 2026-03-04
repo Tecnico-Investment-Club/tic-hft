@@ -5,41 +5,10 @@
 #include <atomic>
 #include <fstream>
 #include <string>
+#include <cstdlib>
 #include "../include/execution/AlpacaOrderExecutor.hpp"
 
 using namespace hft::orders::execution;
-
-// Helper: read from .env file
-static std::string read_env(const std::string& key) {
-    std::ifstream file(".env");
-    if (!file.is_open()) {
-        std::cerr << "Warning: .env file not found\n";
-        return "";
-    }
-    
-    std::string line;
-    while (std::getline(file, line)) {
-        if (line.empty() || line[0] == '#') continue;
-        
-        size_t pos = line.find(key + "=");
-        if (pos == 0) {
-            std::string value = line.substr(key.length() + 1);
-            
-            // Remove trailing whitespace, \r, \n
-            while (!value.empty() && (value.back() == ' ' || value.back() == '\t' 
-                                      || value.back() == '\r' || value.back() == '\n')) {
-                value.pop_back();
-            }
-            
-            // Remove quotes if present
-            if (!value.empty() && value.front() == '"') value.erase(0, 1);
-            if (!value.empty() && value.back() == '"') value.pop_back();
-            
-            return value;
-        }
-    }
-    return "";
-}
 
 /**
  * Simple Order Executor with Capital Tracking
@@ -57,8 +26,8 @@ private:
     std::thread balance_update_thread_;
 
 public:
-    SimpleOrderManager(const std::string& api_key, const std::string& base_url)
-        : executor_(std::make_unique<AlpacaOrderExecutor>(api_key, base_url, 10))
+    SimpleOrderManager(const std::string& api_key, const std::string& secret_key, const std::string& base_url)
+        : executor_(std::make_unique<AlpacaOrderExecutor>(api_key, secret_key, base_url, 10))
     {
     }
 
@@ -136,8 +105,14 @@ int main() {
     std::cout << "=== HFT Orders System - Fire-and-Forget Example ===\n";
     std::cout << "Simple order execution with capital tracking\n\n";
 
-    // Read API credentials from .env
+    // Read API credentials from .env/env vars
+    auto read_env = [](const char* key) {
+        const char* value = std::getenv(key);
+        return value ? std::string(value) : std::string();
+    };
+
     std::string api_key = read_env("ALPACA_API_KEY");
+    std::string secret_key = read_env("ALPACA_SECRET_KEY");
     std::string base_url = read_env("ALPACA_BASE_URL");
     
     if (base_url.empty()) {
@@ -145,10 +120,11 @@ int main() {
     }
     
     std::cout << "API Key loaded: " << (api_key.empty() ? "❌ NOT FOUND" : "✓ OK") << "\n";
+    std::cout << "Secret Key loaded: " << (secret_key.empty() ? "❌ NOT FOUND" : "✓ OK") << "\n";
     std::cout << "Base URL: " << base_url << "\n\n";
 
     // Create manager with API credentials
-    SimpleOrderManager manager(api_key, base_url);
+    SimpleOrderManager manager(api_key, secret_key, base_url);
 
     manager.initialize();
 

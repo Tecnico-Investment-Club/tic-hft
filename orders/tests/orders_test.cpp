@@ -3,6 +3,7 @@
 #include <vector>
 #include <thread>
 #include <chrono>
+#include <cstdlib>
 #include "include/execution/AlpacaOrderExecutor.hpp"
 
 using namespace hft::orders::execution;
@@ -11,16 +12,27 @@ using namespace hft::orders::execution;
 class AlpacaOrderExecutorTest : public ::testing::Test {
 protected:
     void SetUp() override {
+        const char* api_key_ = std::getenv("ALPACA_API_KEY");
+        const char* secret_key_ = std::getenv("ALPACA_SECRET_KEY");
+        const char* base_url_ = std::getenv("ALPACA_BASE_URL");
+
+        if (!api_key_ || !secret_key_ || std::string(api_key_).empty() || std::string(secret_key_).empty()) {
+            GTEST_SKIP() << "ALPACA_API_KEY/ALPACA_SECRET_KEY not set. Skipping integration-like executor tests.";
+        }
+
         executor = std::make_unique<AlpacaOrderExecutor>(
-            "test-key",
-            "https://paper-api.alpaca.markets",
+            api_key_,
+            secret_key_,
+            (base_url_ && std::string(base_url_).size() > 0) ? base_url_ : "https://paper-api.alpaca.markets",
             10  // max batch size
         );
         executor->initialize();
     }
     
     void TearDown() override {
-        executor->shutdown();
+        if (executor) {
+            executor->shutdown();
+        }
     }
     
     std::unique_ptr<AlpacaOrderExecutor> executor;
@@ -107,9 +119,18 @@ TEST_F(AlpacaOrderExecutorTest, MultipleOrdersDontBlock) {
 
 // Test 5: Initialize/Shutdown lifecycle
 TEST_F(AlpacaOrderExecutorTest, InitializeAndShutdown) {
+    const char* api_key_ = std::getenv("ALPACA_API_KEY");
+    const char* secret_key_ = std::getenv("ALPACA_SECRET_KEY");
+    const char* base_url_ = std::getenv("ALPACA_BASE_URL");
+
+    if (!api_key_ || !secret_key_ || std::string(api_key_).empty() || std::string(secret_key_).empty()) {
+        GTEST_SKIP() << "ALPACA_API_KEY/ALPACA_SECRET_KEY not set. Skipping integration-like executor tests.";
+    }
+
     auto executor2 = std::make_unique<AlpacaOrderExecutor>(
-        "test-key",
-        "https://paper-api.alpaca.markets",
+        api_key_,
+        secret_key_,
+        (base_url_ && std::string(base_url_).size() > 0) ? base_url_ : "https://paper-api.alpaca.markets",
         10
     );
     

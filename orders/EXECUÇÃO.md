@@ -60,6 +60,7 @@ cp .env.example .env
 Resultado:
 ```bash
 ALPACA_API_KEY="PKxxxxx..."
+ALPACA_SECRET_KEY="xxxxxxxxxxxxxxxx"
 ALPACA_BASE_URL="https://paper-api.alpaca.markets"
 ```
 
@@ -205,6 +206,7 @@ Ver [examples/example_fire_and_forget.cpp](examples/example_fire_and_forget.cpp)
 // 1. Criar executor
 auto executor = std::make_unique<AlpacaOrderExecutor>(
     std::getenv("ALPACA_API_KEY"),
+  std::getenv("ALPACA_SECRET_KEY"),
     std::getenv("ALPACA_BASE_URL"),
     10  // batch size
 );

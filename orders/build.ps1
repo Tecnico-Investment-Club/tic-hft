@@ -10,8 +10,18 @@ param(
 # Load environment variables from .env
 if (Test-Path ".env") {
     Write-Host "Loading environment variables from .env" -ForegroundColor Yellow
-    Get-Content .env | Where-Object { $_ -notmatch "^\s*#" } | ForEach-Object {
-        $name, $value = $_ -split '=', 2
+    Get-Content .env | ForEach-Object {
+        $line = $_.Trim()
+        if ($line -eq "" -or $line -match "^\s*#") { return }
+        if ($line -notmatch "=") { return }
+
+        $name, $value = $line -split '=', 2
+        $name = $name.Trim()
+        $value = $value.Trim()
+
+        if ([string]::IsNullOrWhiteSpace($name)) { return }
+
+        $value = $value -replace "`r", ""
         $value = $value -replace '^\s*"', '' -replace '"\s*$', ''
         [Environment]::SetEnvironmentVariable($name, $value, "Process")
     }

@@ -36,10 +36,12 @@ Ver [../CONFIG_TEMPLATE.md](../CONFIG_TEMPLATE.md) para detalhes.
 ```bash
 # Linux / Mac
 export ALPACA_API_KEY="sk_paper123..."
+export ALPACA_SECRET_KEY="xxxxxxxxxxxxxxxx"
 export ALPACA_BASE_URL="https://paper-api.alpaca.markets"
 
 # Windows PowerShell
 $env:ALPACA_API_KEY="sk_paper123..."
+$env:ALPACA_SECRET_KEY="xxxxxxxxxxxxxxxx"
 $env:ALPACA_BASE_URL="https://paper-api.alpaca.markets"
 ```
 
@@ -54,6 +56,7 @@ int main() {
     // PASSO 1: Criar o executor
     auto executor = std::make_unique<AlpacaOrderExecutor>(
         std::getenv("ALPACA_API_KEY"),
+        std::getenv("ALPACA_SECRET_KEY"),
         "https://paper-api.alpaca.markets",  // paper = teste
         10  // agrupa 10 ordens antes de enviar
     );
@@ -145,6 +148,7 @@ executor->sendOrder(sell);
 - ✓ Thread background envia para Alpaca 
 - ✗ Não há validação automática no orders = **tu validasdados antes de enviar**
 - ✗ Precisa da API key no ambiente
+- ✗ Precisa de API key e secret key no ambiente
 - ✗ Paper trading = sem dinheiro real
 
 ## 🔗 Mais Info
