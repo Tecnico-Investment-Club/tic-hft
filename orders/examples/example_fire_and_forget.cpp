@@ -105,15 +105,9 @@ int main() {
     std::cout << "=== HFT Orders System - Fire-and-Forget Example ===\n";
     std::cout << "Simple order execution with capital tracking\n\n";
 
-    // Read API credentials from .env/env vars
-    auto read_env = [](const char* key) {
-        const char* value = std::getenv(key);
-        return value ? std::string(value) : std::string();
-    };
-
-    std::string api_key = read_env("ALPACA_API_KEY");
-    std::string secret_key = read_env("ALPACA_SECRET_KEY");
-    std::string base_url = read_env("ALPACA_BASE_URL");
+    std::string api_key = getenv("ALPACA_API_KEY");
+    std::string secret_key = getenv("ALPACA_SECRET_KEY");
+    std::string base_url = getenv("ALPACA_BASE_URL");
     
     if (base_url.empty()) {
         base_url = "https://paper-api.alpaca.markets";
