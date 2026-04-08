@@ -1,5 +1,0 @@
-/mnt/c/Users/pedro/Documents/GITHUB/Tecnico_Investment_Club/tic-hft/position/build/CMakeFiles/hft-position.dir
-/mnt/c/Users/pedro/Documents/GITHUB/Tecnico_Investment_Club/tic-hft/position/build/CMakeFiles/position_test.dir
-/mnt/c/Users/pedro/Documents/GITHUB/Tecnico_Investment_Club/tic-hft/position/build/CMakeFiles/test.dir
-/mnt/c/Users/pedro/Documents/GITHUB/Tecnico_Investment_Club/tic-hft/position/build/CMakeFiles/edit_cache.dir
-/mnt/c/Users/pedro/Documents/GITHUB/Tecnico_Investment_Club/tic-hft/position/build/CMakeFiles/rebuild_cache.dir

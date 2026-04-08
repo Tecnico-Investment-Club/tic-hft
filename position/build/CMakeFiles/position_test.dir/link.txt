@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/position_test.dir/tests/position_test.cpp.o -o position_test  libhft-position.a 

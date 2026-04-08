@@ -1,2 +1,0 @@
-/usr/bin/ar qc libhft-position.a "CMakeFiles/hft-position.dir/src/PositionTracker.cpp.o"
-/usr/bin/ranlib libhft-position.a
