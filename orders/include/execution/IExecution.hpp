@@ -4,6 +4,10 @@
 #include <memory>
 #include <cstdint>
 
+// Import common types from core (for integration with other modules)
+// Note: local types below are kept for backward compatibility
+#include "../../../core/include/CommonTypes.hpp"
+
 namespace hft::orders::execution {
 
 struct Order {
