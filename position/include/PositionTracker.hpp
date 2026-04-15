@@ -5,6 +5,10 @@
 #include <string>
 #include <unordered_map>
 
+// Import common types from core (for integration with other modules)
+// Note: local types below are kept for backward compatibility
+#include "../../core/include/CommonTypes.hpp"
+
 namespace hft::position {
 
 enum class Side {
